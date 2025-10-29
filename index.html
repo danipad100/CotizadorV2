@@ -1,0 +1,1023 @@
+<!DOCTYPE html>
+
+<html lang="es">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1" name="viewport"/>
+<title>Cotizador de Productos</title>
+<style>
+  :root{
+    --bg:#f8fafc; --card:#ffffff; --text:#0f172a; --muted:#475569;
+    --line:#e2e8f0; --accent:#ff7aa2; --accentText:#111827;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:Inter,ui-sans-serif,system-ui,-apple-system,'Segoe UI',Roboto,Arial;background:var(--bg);color:var(--text)}
+  .app{max-width:1080px;margin:20px auto;padding:16px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:16px;box-shadow:0 10px 30px rgba(2,6,23,.06);padding:16px}
+  h1{margin:0 0 8px;font-size:22px}
+  .hint{font-size:12px;color:var(--muted)}
+  .grid{display:grid;grid-template-columns:repeat(12,1fr);gap:12px}
+  .field label{font-size:12px;color:var(--muted);display:block;margin:0 0 6px}
+  .field input,.field select{width:100%;background:#fff;color:var(--text);border:1px solid var(--line);border-radius:12px;padding:10px 12px}
+  button{background:var(--accent);color:var(--accentText);border:0;border-radius:12px;padding:10px 14px;font-weight:700;cursor:pointer}
+  button.ghost{background:transparent;color:var(--text);border:1px solid var(--line)}
+  .sep{height:1px;background:var(--line);margin:12px 0}
+  .bar{display:flex;gap:10px;align-items:center;justify-content:space-between}
+  .badge{display:inline-flex;align-items:center;gap:6px;background:#fff;border:1px solid var(--line);border-radius:999px;padding:6px 10px;font-size:12px}
+  table{width:100%;border-collapse:collapse;background:var(--card)}
+  th,td{border-bottom:1px solid var(--line);padding:8px;font-size:13px;text-align:left}
+  th{color:var(--muted);position:sticky;top:0;background:var(--card)}
+  tbody tr:nth-child(odd){background:#fcfcfd}
+  tfoot td{font-weight:800;font-size:16px}
+  .right{text-align:right}
+  .pillToggle{display:flex;border:1px solid var(--line);border-radius:999px;overflow:hidden}
+  .pillToggle button{background:#fff;border:0;border-right:1px solid var(--line);border-radius:0;padding:8px 12px;font-weight:600}
+  .pillToggle button:last-child{border-right:0}
+  .pillToggle button.active{background:var(--accent)}
+  details > summary{cursor:pointer;list-style:none}
+  details > summary::-webkit-details-marker{display:none}
+  .summaryBar{display:flex;justify-content:space-between;align-items:center;padding:8px 12px;border:1px solid var(--line);border-radius:12px;background:#fff}
+  .toolbar{display:flex;gap:8px;flex-wrap:wrap}
+
+  /* ===== Responsive ===== */
+  @media (max-width: 960px){
+    .app{padding:12px}
+    h1{font-size:20px}
+    .bar{flex-wrap:wrap; gap:8px}
+    .badge{font-size:12px}
+    .grid .field{grid-column:span 12 !important}
+    .toolbar{gap:6px}
+    .toolbar > *{flex:1 1 auto}
+    .pillToggle{flex-wrap:wrap}
+    .pillToggle button{flex:1 1 48%}
+  }
+  @media (max-width: 640px){
+    body{font-size:14px}
+    .card{padding:12px}
+    .field input,.field select{padding:12px}
+    .tblwrap{max-height:none; overflow-x:auto}
+    table{min-width:720px}
+    th,td{padding:6px 8px}
+    tfoot td{font-size:15px}
+    #agregar,#reset,#copiar,#whatsLink{width:100%}
+  }
+
+
+  /* Ocultar columna Costo cuando .hide-cost está presente */
+  .hide-cost th:nth-child(4),
+  .hide-cost td:nth-child(4){ display:none; }
+
+
+  .toolbar.sticky{ position: sticky; top: 8px; background: var(--card); padding:8px; border:1px solid var(--line); border-radius:12px; z-index:5 }
+  .toast{ position: fixed; right: 12px; bottom: 12px; background: #111827; color: #fff; padding:10px 14px; border-radius:12px; box-shadow:0 10px 30px rgba(2,6,23,.2); font-size:13px; opacity:0; transform:translateY(8px); transition:all .25s ease }
+  .toast.show{ opacity:1; transform:translateY(0) }
+
+</style>
+<style>
+/* === Estilo rosa para el botón de WhatsApp === */
+.btn-wa-rosa{
+  background: #ff4fa3 !important; /* rosa */
+  border: 1px solid #ff4fa3 !important;
+  color: #ffffff !important;
+  border-radius: 10px !important;
+  padding: 10px 14px !important;
+  font-weight: 600 !important;
+  transition: transform .08s ease, opacity .2s ease, filter .2s ease !important;
+  box-shadow: 0 6px 14px rgba(255,79,163,.25) !important;
+}
+.btn-wa-rosa:hover{ 
+  filter: brightness(1.05) !important;
+  transform: translateY(-1px) !important;
+}
+.btn-wa-rosa:active{
+  transform: translateY(0) scale(.99) !important;
+}
+.btn-wa-rosa:disabled{
+  opacity:.6 !important;
+  cursor:not-allowed !important;
+}
+</style><link href="manifest.json" rel="manifest"/><meta content="#ff7aa2" name="theme-color"/><meta content="yes" name="apple-mobile-web-app-capable"/><meta content="Cotizador" name="apple-mobile-web-app-title"/><link href="icon-180.png" rel="apple-touch-icon"/></head>
+<body>
+<div class="app">
+<div class="card">
+<div class="bar">
+<div>
+<h1>Cotizador de Productos</h1>
+<div class="hint">Precios fijos por Ítem/Descripción. Selecciona el tipo de cliente y agrega líneas.</div>
+</div>
+<div class="badge">👤 Cliente: <strong id="badgeCliente">Detal</strong><span class="hint" id="badgeClienteNombre" style="margin-left:6px"></span></div>
+<button class="ghost" id="btnAdmin">🔒 Admin</button>
+</div>
+<details id="cfg" open="">
+<summary class="summaryBar">
+<span>⚙️ Configuración</span>
+<span class="hint">WhatsApp + tipo de cliente</span>
+</summary>
+<div class="grid" style="margin:12px 0">
+<div class="field" style="grid-column:span 3">
+<label>Tipo de cliente</label>
+<select id="tipoCliente">
+<option selected="" value="Detal">Detal</option>
+<option value="Mayor">Mayor</option>
+<option value="Gran Mayor">Gran Mayor</option>
+</select>
+</div>
+<div class="field" style="grid-column:span 3">
+<label>WhatsApp</label>
+<input id="telefono" placeholder="58412XXXXXXX"/>
+</div>
+<div class="field" style="grid-column:span 3">
+<label>Nombre del cliente</label>
+<input id="clienteNombre" placeholder="Ej: Daniel"/>
+</div>
+<div class="field" style="grid-column:span 3">
+<label>Dólar BCV</label>
+<input id="bcv" placeholder="Ej: 40,00" step="0.01" type="number"/>
+<div style="display:flex;gap:8px;align-items:center;margin-top:6px">
+<button class="ghost" id="bcv_refresh" style="font-size:12px;padding:6px 10px">Actualizar BCV</button>
+<span class="hint" id="bcv_status">—</span>
+</div>
+</div>
+<div class="field" style="grid-column:span 6">
+<label>Mensaje WhatsApp (inicio)</label>
+<input id="msgIni" value="Hola 👋, te comparto la cotización de pijamas:"/>
+</div>
+<div class="field" style="grid-column:span 12">
+<label>Mensaje WhatsApp (final)</label>
+<input id="msgFin" value="Gracias por tu preferencia ❤️"/>
+</div>
+</div>
+<div class="sep"></div>
+</details>
+<div class="grid" style="margin-bottom:8px">
+<div class="field" style="grid-column:span 5">
+<label>Filtro: Tipo de pijama</label>
+<div class="pillToggle" id="filtroTipo">
+<button class="active" data-k="ALL">Todos</button>
+<button data-k="Manga Corta">Manga Corta</button>
+<button data-k="Manga Larga">Manga Larga</button>
+<button data-k="Otros">Otros</button>
+</div>
+</div>
+<div class="field" style="grid-column:span 4">
+<label>Ítem</label>
+<select id="item"></select>
+</div>
+<div class="field" style="grid-column:span 2">
+<label>Descripción</label>
+<select id="talla"></select>
+</div>
+<div class="field" style="grid-column:span 1">
+<label>Cant.</label>
+<input id="cantidad" min="1" type="number" value="1"/>
+</div>
+</div>
+<div class="toolbar sticky">
+<button id="agregar">+ Añadir</button>
+<button class="ghost" id="reset">Reset</button>
+<button class="ghost" id="copiar">Copiar WhatsApp</button>
+<a class="ghost btn-wa-rosa" href="#" id="whatsLink" rel="noopener" target="_blank">Abrir WhatsApp</a>
+</div>
+<div class="tblwrap" style="overflow:auto;max-height:52vh;margin-top:8px;border:1px solid var(--line);border-radius:12px">
+<table id="tabla">
+<thead>
+<tr>
+<th style="width:68px">Cant.</th>
+<th>Ítem</th>
+<th>Descripción</th>
+<th class="right">Costo</th>
+<th class="right" style="width:120px">P.Unit</th>
+<th class="right" style="width:120px">Total</th>
+<th></th>
+</tr>
+</thead>
+<tbody></tbody>
+<tfoot>
+<tr>
+<td class="right" colspan="5">TOTAL ($)</td>
+<td class="right" id="granTotal">0,00</td>
+<td></td>
+</tr>
+<tr>
+<td class="right" colspan="5">ABONO (50%) — Bs</td>
+<td class="right" id="abonoBs">0,00 Bs</td>
+<td></td>
+</tr>
+<tr>
+<td class="right" colspan="5">RESTANTE ($)</td>
+<td class="right" id="restanteUsd">0,00 $</td>
+<td></td>
+</tr>
+</tfoot>
+</table>
+</div>
+<p class="hint" id="texto" style="white-space:pre-wrap;margin-top:12px"></p>
+<div aria-live="polite" class="toast" id="toast" role="status">Mensaje copiado</div>
+</div>
+</div>
+<script>
+// ======= Catálogo completo (fusionado) =======
+const CAT = {
+ "Manga Corta Microdurazno Blanca":{
+  "Niños tallas 2-8":{c:11.70,d:16.38,m:15.21},
+  "Adultos tallas 10-L":{c:12.20,d:17.08,m:15.86},
+  "Adultos tallas XL":{c:14.20,d:19.88,m:18.46},
+  "Adultos tallas XXL":{c:16.20,d:22.68,m:21.06},
+  "Adultos tallas XXXL":{c:18.20,d:25.48,m:23.66}
+ },
+ "Manga Larga Microdurazno Blanca":{
+  "Niños tallas 2-8":{c:13.20,d:18.48,m:17.16},
+  "Adultos tallas 10-L":{c:13.70,d:19.18,m:17.81},
+  "Adultos tallas XL":{c:15.70,d:21.98,m:20.41},
+  "Adultos tallas XXL":{c:17.70,d:24.78,m:23.01},
+  "Adultos tallas XXXL":{c:19.70,d:27.58,m:25.61}
+ },
+ "Manga Larga Microdurazno Negro/Azul/Rojo":{
+  "Niños tallas 2-8":{c:15.00,d:21.00,m:19.50},
+  "Adultos tallas 10-L":{c:15.50,d:21.70,m:20.15},
+  "Adultos tallas XL":{c:16.50,d:23.10,m:21.45},
+  "Adultos tallas XXL":{c:18.50,d:25.90,m:24.05},
+  "Adultos tallas XXXL":{c:20.50,d:28.70,m:26.65}
+ },
+ "Manga Corta Algodón Colores":{
+  "Niños tallas 2-8":{c:15.50,d:21.70,m:20.15},
+  "Adultos 10-L":{c:16.00,d:22.40,m:20.80},
+  "Adultos Talla XL":{c:18.50,d:25.90,m:24.05},
+  "Adultos Talla XXL":{c:20.50,d:28.70,m:26.65},
+  "Adultos Talla XXXL":{c:22.50,d:31.50,m:29.25}
+ },
+ "Manga Larga Algodón Colores":{
+  "Niños 2-8":{c:16.50,d:23.10,m:21.45},
+  "Adultos 10-L":{c:17.50,d:24.50,m:22.75},
+  "Adultos Talla XL":{c:19.50,d:27.30,m:25.35},
+  "Adultos Talla XXL":{c:21.50,d:30.10,m:27.95},
+  "Adultos Talla XXXL":{c:23.50,d:32.90,m:30.55}
+ },
+ "Combinados":{
+  "Niño tallas 2-8":{c:13.50,d:18.90,m:17.55},
+  "Adulto 10-L":{c:15.50,d:21.70,m:20.15},
+  "Adulto XL":{c:17.50,d:24.50,m:22.75},
+  "Adulto XXL":{c:19.50,d:27.30,m:25.35},
+  "Adulto XXXL":{c:21.50,d:30.10,m:27.95}
+ },
+ "Enterizo Blanco":{"3-24 meses":{c:5.70,d:7.98,m:7.41}},
+ "Enterizo Negro":{"3-24 meses":{c:7.50,d:10.50,m:9.75}},
+ "Enterizo Algodón":{"3-24 meses":{c:8.50,d:11.90,m:11.05}},
+ "Body Microdurazno":{"3-24 meses":{c:4.20,d:5.88,m:5.46}},
+ "Body Microdurazno Negro":{"3-24 meses":{c:6.00,d:8.40,m:7.80}},
+ "Body Algodón":{"3-24 meses":{c:6.50,d:9.10,m:8.45}},
+ "Ropa para Mascotas":{"Pequeñas":{c:5.70,d:7.98,m:7.41},"Grandes":{c:6.70,d:9.38,m:8.71}},
+ "Pijama elfo":{"Niño tallas 2-10":{c:19.00,d:26.60,m:24.70},"Adulto talla 12-L":{c:20.43,d:28.60,m:26.56}}
+};
+
+const $ = (q,ctx=document)=>ctx.querySelector(q);
+const $$ = (q,ctx=document)=>Array.from(ctx.querySelectorAll(q));
+const itemSel = $('#item');
+const clienteNombreEl = document.getElementById('clienteNombre');
+const tallaSel = $('#talla');
+const tipoCliente = $('#tipoCliente');
+const badgeCliente = $('#badgeCliente');
+
+function fmt(n){return (Math.round(n*100)/100).toLocaleString('es-ES',{minimumFractionDigits:2,maximumFractionDigits:2});}
+function parseEU(v){
+  if(v==null) return 0;
+  let s = String(v).trim();
+  // Si tiene punto y coma → formato europeo: punto miles, coma decimal
+  if(s.includes('.') && s.includes(',')){
+    s = s.replace(/\./g,'').replace(',', '.');
+  }else if(s.includes(',')){ // Solo coma → usar como decimal
+    s = s.replace(',', '.');
+  }else{
+    // Solo punto o solo dígitos → ya está en formato estándar
+  }
+  const n = parseFloat(s);
+  return isNaN(n) ? 0 : n;
+}
+
+function updateBadgeNombre(){
+  const n = (document.getElementById('clienteNombre')?.value || '').trim();
+  const el = document.getElementById('badgeClienteNombre');
+  if(!el) return;
+  el.textContent = n ? '— ' + n : '';
+}
+function buildItems(filter="ALL"){
+  itemSel.innerHTML="";
+  // Optgroups por categoría mayor
+  const grupos = {
+    "Microdurazno": [],
+    "Algodón": [],
+    "Otros": []
+  };
+  Object.keys(CAT).forEach(k=>{
+    const isCorta = k.includes("Manga Corta");
+    const isLarga = k.includes("Manga Larga");
+    const grupo = k.includes("Microdurazno") ? "Microdurazno" : (k.includes("Algodón") ? "Algodón" : "Otros");
+    // filtro tipo
+    if(filter==="Manga Corta" && !isCorta) return;
+    if(filter==="Manga Larga" && !isLarga) return;
+    if(filter==="Otros" && (isCorta || isLarga)) return;
+    grupos[grupo].push(k);
+  });
+  Object.entries(grupos).forEach(([g,arr])=>{
+    if(!arr.length) return;
+    const og = document.createElement('optgroup'); og.label = g;
+    arr.forEach(k=>{ const o=document.createElement('option'); o.textContent=k; og.appendChild(o); });
+    itemSel.appendChild(og);
+  });
+  loadTallas();
+}
+
+function loadTallas(){
+  tallaSel.innerHTML="";
+  const t = CAT[itemSel.value];
+  Object.keys(t).forEach(s=>{ const o=document.createElement('option'); o.textContent=s; tallaSel.appendChild(o); });
+}
+
+$('#filtroTipo').addEventListener('click',e=>{
+  if(e.target.tagName!=='BUTTON') return;
+  $$('#filtroTipo button').forEach(b=>b.classList.remove('active'));
+  e.target.classList.add('active');
+  buildItems(e.target.dataset.k);
+});
+
+itemSel.addEventListener('change',loadTallas);
+
+function recalcTotal(){
+
+  let total=0;
+  $$('#tabla tbody tr').forEach(tr=> total += parseFloat(tr.dataset.total||0));
+  $('#granTotal').textContent = fmt(total) + ' $';
+  // calcular abono 50% en Bs
+  const bcv = parseEU($('#bcv')?.value || 0);
+  const abono = total * 0.5 * bcv;
+  if($('#abonoBs')) $('#abonoBs').textContent = fmt(abono) + ' Bs';
+  buildText();
+
+  // calcular restante (USD)
+  const totalNum = parseEU(document.getElementById('granTotal').textContent.replace(/[^\d.,]/g,''));
+  const restante = totalNum * 0.5; // 50% restante
+  const restEl = document.getElementById('restanteUsd'); if(restEl) restEl.textContent = fmt(restante) + ' $';
+  try{ updateBadgeNombre(); }catch(e){}
+}
+
+
+function addLinea(){
+  const it = itemSel.value;
+  const ta = tallaSel.value;
+  const q = Math.max(1, parseInt($('#cantidad').value||1));
+  const datos = CAT[it][ta];
+  let pu;
+  if(tipoCliente.value==='Gran Mayor') pu = (datos.g ?? datos.m ?? datos.d);
+  else if(tipoCliente.value==='Mayor') pu = (datos.m ?? datos.d);
+  else pu = (datos.d ?? datos.m);
+  const total = pu * q;
+
+  const tr = document.createElement('tr');
+  tr.dataset.total = total;
+  tr.innerHTML = `
+    <td>${q}</td>
+    <td>${it}</td>
+    <td>${ta}</td>
+    <td class="right">${fmt(datos.c)} $</td>
+    <td class="right">${fmt(pu)} $</td>
+    <td class="right">${fmt(total)} $</td>
+    <td><button class="ghost del">✕</button></td>
+  `;
+  $('#tabla tbody').appendChild(tr);
+  recalcTotal();
+}
+
+document.addEventListener('click',e=>{
+  if(e.target.classList.contains('del')){ e.target.closest('tr').remove(); recalcTotal(); }
+});
+
+$('#agregar').addEventListener('click', addLinea);
+$('#reset').addEventListener('click', ()=>{ $('#tabla tbody').innerHTML=''; recalcTotal(); });
+
+function buildText(){
+  badgeCliente.textContent = tipoCliente.value;
+
+  const lines = $$('#tabla tbody tr').map(tr=>{
+    const t = tr.children;
+    return `${t[0].textContent}x ${t[1].textContent} ${t[2].textContent} → ${t[5].textContent}`;
+  });
+
+  const nombre = (document.getElementById('clienteNombre')?.value || '').trim();
+
+  const totalTxt = $('#granTotal').textContent;
+  const totalNum = parseEU(totalTxt.replace(/[^\d.,]/g, ''));
+  const abonoUSD = totalNum * 0.5;
+  const restanteUSD = totalNum - abonoUSD;
+
+  const abonoUsdTxt = fmt(abonoUSD) + ' $';
+  const restanteUsdTxt = fmt(restanteUSD) + ' $';
+  const abonoBsTxt = $('#abonoBs')?.textContent || '0,00 Bs';
+
+  const txt = `${$('#msgIni').value}
+Cliente: ${tipoCliente.value}${nombre ? ' — ' + nombre : ''}
+Productos:
+${lines.join('\n')}
+Total: ${fmt(totalNum)} $
+Abono 50%: ${abonoUsdTxt}
+Abono en Bs: ${abonoBsTxt}
+Restante: ${restanteUsdTxt}
+${$('#msgFin').value}`;
+
+  $('#texto').textContent = txt;
+
+  const tel = $('#telefono').value.trim();
+  const base = tel ? `https://wa.me/${tel}?text=` : `https://wa.me/?text=`;
+  $('#whatsLink').href = base + encodeURIComponent(txt);
+}
+
+tipoCliente.addEventListener('change', ()=>{
+  badgeCliente.textContent = tipoCliente.value;
+  localStorage.setItem('ULTIMO_TIPO_CLIENTE', tipoCliente.value);
+  buildText();
+});
+
+
+// ===== Mostrar/Ocultar Costo =====
+const HIDE_COST_KEY = 'MOSTRAR_COSTO'; // store '1' to show, '0' to hide
+const toggleCosto = document.getElementById('toggleCosto');
+
+function applyCostVisibility(){
+  const show = localStorage.getItem(HIDE_COST_KEY) === '1';
+  if(show){
+    document.body.classList.remove('hide-cost');
+    if(toggleCosto) toggleCosto.checked = true;
+  }else{
+    document.body.classList.add('hide-cost');
+    if(toggleCosto) toggleCosto.checked = false;
+  }
+}
+
+if(toggleCosto){
+  toggleCosto.addEventListener('change', ()=>{
+    localStorage.setItem(HIDE_COST_KEY, toggleCosto.checked ? '1' : '0');
+    applyCostVisibility();
+  });
+}
+
+// Aplicar al inicio (por defecto oculto si no hay nada guardado)
+applyCostVisibility();
+
+
+// Persistencia del BCV
+const BCV_KEY = 'BCV_RATE';
+const bcvInput = document.getElementById('bcv');
+if(bcvInput){
+  // cargar guardado
+  try{
+    const raw = localStorage.getItem(BCV_KEY);
+    if(raw){ bcvInput.value = raw; }
+  }catch(e){}
+  // guardar en cambios y recalcular
+  bcvInput.addEventListener('input', ()=>{
+    localStorage.setItem(BCV_KEY, bcvInput.value);
+    recalcTotal();
+  });
+}
+
+// persistir nombre de cliente y refrescar mensaje
+if(clienteNombreEl){
+  clienteNombreEl.addEventListener('input', ()=>{
+    try{ localStorage.setItem('NOMBRE_CLIENTE', clienteNombreEl.value); }catch(e){}
+    try{ buildText(); }catch(e){}
+  });
+}
+
+// init
+buildItems("ALL");
+try{ const nc = localStorage.getItem("NOMBRE_CLIENTE"); if(nc && clienteNombreEl){ clienteNombreEl.value = nc; } }catch(e){}
+// cargar último tipo de cliente
+try{
+  const last = localStorage.getItem('ULTIMO_TIPO_CLIENTE');
+  if(last){ document.getElementById('tipoCliente').value = last; }
+}catch(e){}
+
+// forzar Detal como valor inicial
+try{ document.getElementById('tipoCliente').value = 'Detal'; }catch(e){}
+buildText();
+</script>
+<!-- === Módulo de Catálogo (UI sencilla) === -->
+<div class="card" id="modCatalogo" style="margin-top:20px;display:none">
+<h3>📦 Catálogo</h3>
+<p class="hint">Agrega/edita ítems y tallas con sus precios. Puedes guardar los cambios en este dispositivo y restaurar el catálogo original cuando quieras.</p>
+<div class="grid" style="margin-top:8px">
+<div class="field" id="adminToggleCostoWrap" style="grid-column:span 3">
+<label> </label>
+<label style="display:flex;gap:8px;align-items:center"><input id="toggleCosto" type="checkbox"/> Mostrar Costo</label>
+</div>
+<div class="field" style="grid-column:span 4">
+<label>Ítem (producto)</label>
+<select id="admin_item"></select>
+</div>
+<div class="field" style="grid-column:span 4">
+<label>Descripción</label>
+<select id="admin_talla"></select>
+</div>
+<div class="field" style="grid-column:span 2">
+<label>Crear ítem nuevo</label>
+<input id="admin_newItem" placeholder="Ej: Pijama Premium"/>
+</div>
+<div class="field" style="grid-column:span 2;align-self:end">
+<button id="admin_addItem">+ Crear ítem</button>
+</div>
+<div class="field" style="grid-column:span 3">
+<label>Costo (C)</label>
+<input id="admin_c" min="0" step="0.01" type="number"/>
+</div>
+<div class="field" style="grid-column:span 3">
+<label>Precio Gran Mayor (G)</label>
+<input id="admin_g" min="0" step="0.01" type="number"/>
+</div>
+<div class="field" style="grid-column:span 3">
+<label>Precio Mayor (M)</label>
+<input id="admin_m" min="0" step="0.01" type="number"/>
+</div>
+<div class="field" style="grid-column:span 3">
+<label>Precio Detal (D)</label>
+<input id="admin_d" min="0" step="0.01" type="number"/>
+</div>
+<div class="field" style="grid-column:span 3;align-self:end">
+<div class="toolbar">
+<button id="admin_saveTall">💾 Guardar descripción</button>
+<button class="ghost" id="admin_delTall">🗑️ Eliminar descripción</button>
+</div>
+</div>
+</div>
+<div class="field" style="grid-column:span 12">
+<label>Importar tabla (Color, Descripción, GranMayor, Mayor, Detal) — pega líneas sin encabezado</label>
+<textarea id="admin_import" placeholder="Colores\t6 cm\t1,60\t1,90\t2,30\nBlancas\t8 cm\t2,90\t3,30\t3,80" style="width:100%;height:120px;border:1px solid var(--line);border-radius:12px;padding:10px"></textarea>
+</div>
+<div class="field" style="grid-column:span 6">
+<label>Prefijo de ítem (familia)</label>
+<input id="admin_prefix" placeholder="Ej: Bambalinas"/>
+</div>
+<div class="field" style="grid-column:span 6;align-self:end">
+<button id="admin_runImport">📥 Importar tabla</button>
+</div>
+<div class="sep"></div>
+<div class="toolbar">
+<button id="btnGuardarCAT">Guardar Catálogo (este dispositivo)</button>
+<button class="ghost" id="btnRestaurarCAT">Restaurar Catálogo Original</button>
+<span class="hint">Los cambios se guardan en el almacenamiento local del navegador.</span>
+</div>
+</div>
+<script>
+// ======= Persistencia local =======
+const CAT_STORAGE_KEY = 'CAT_PIJAMAS_V1';
+const CAT_ORIGINAL = JSON.parse(JSON.stringify(CAT));
+
+function loadCATFromStorage(){
+  try{
+    const raw = localStorage.getItem(CAT_STORAGE_KEY);
+    if(!raw) return;
+    const saved = JSON.parse(raw);
+    // Reemplazar contenido de CAT
+    Object.keys(CAT).forEach(k=>delete CAT[k]);
+    Object.assign(CAT, saved);
+  }catch(e){ console.warn('No se pudo cargar CAT de storage', e); }
+}
+
+function saveCATToStorage(){
+  try{
+    localStorage.setItem(CAT_STORAGE_KEY, JSON.stringify(CAT));
+    alert('✅ Catálogo guardado en este dispositivo.');
+  }catch(e){
+    alert('❌ No se pudo guardar. Revisa permisos de almacenamiento.');
+  }
+}
+
+function restoreCATOriginal(){
+  if(!confirm('¿Restaurar el catálogo original? Se perderán los cambios locales.')) return;
+  try{
+    localStorage.removeItem(CAT_STORAGE_KEY);
+    Object.keys(CAT).forEach(k=>delete CAT[k]);
+    Object.assign(CAT, JSON.parse(JSON.stringify(CAT_ORIGINAL)));
+    buildItems("ALL");
+    // reconstruir selects admin
+    admin_buildItemSelect();
+    admin_loadTallas();
+    admin_fillPrices();
+    alert('🔄 Catálogo original restaurado.');
+  }catch(e){
+    alert('❌ Error al restaurar el catálogo original.');
+  }
+}
+
+// ======= UI Admin =======
+const admin_item = document.getElementById('admin_item');
+const admin_talla = document.getElementById('admin_talla');
+const admin_c = document.getElementById('admin_c');
+const admin_g = document.getElementById('admin_g');
+const admin_m = document.getElementById('admin_m');
+const admin_d = document.getElementById('admin_d');
+const admin_newItem = document.getElementById('admin_newItem');
+
+function admin_buildItemSelect(){
+  admin_item.innerHTML = '';
+  Object.keys(CAT).forEach(k=>{
+    const o = document.createElement('option');
+    o.textContent = k;
+    admin_item.appendChild(o);
+  });
+}
+
+function admin_loadTallas(){
+  admin_talla.innerHTML = '';
+  const it = admin_item.value;
+  if(!it || !CAT[it]) return;
+  Object.keys(CAT[it]).forEach(t=>{
+    const o = document.createElement('option');
+    o.textContent = t;
+    admin_talla.appendChild(o);
+  });
+}
+
+function admin_fillPrices(){
+  const it = admin_item.value;
+  const ta = admin_talla.value;
+  if(!it || !ta || !CAT[it] || !CAT[it][ta]){
+    admin_c.value = '';
+    admin_g.value = '';
+    admin_m.value = '';
+    admin_d.value = '';
+    return;
+  }
+  const row = CAT[it][ta];
+  admin_c.value = row.c ?? '';
+  admin_g.value = row.g ?? '';
+  admin_m.value = row.m ?? '';
+  admin_d.value = row.d ?? '';
+}
+
+admin_item.addEventListener('change', ()=>{ admin_loadTallas(); admin_fillPrices(); });
+admin_talla.addEventListener('change', admin_fillPrices);
+
+document.getElementById('admin_addItem').addEventListener('click', ()=>{
+  const name = (admin_newItem.value||'').trim();
+  if(!name){ alert('Escribe un nombre para el nuevo ítem.'); return; }
+  if(CAT[name]){ alert('Ya existe un ítem con ese nombre.'); return; }
+  CAT[name] = {};
+  admin_newItem.value = '';
+  admin_buildItemSelect();
+  admin_item.value = name;
+  admin_loadTallas();
+  admin_fillPrices();
+  buildItems("ALL");
+  alert('✅ Ítem creado. Ahora agrega tallas y precios.');
+});
+
+document.getElementById('admin_saveTall').addEventListener('click', ()=>{
+  const it = admin_item.value;
+  let ta = admin_talla.value;
+  if(!it){ alert('Selecciona un ítem.'); return; }
+  if(!ta){
+    ta = prompt('Escribe la nueva descripción (ej: "6 cm", "Adulto XL", "Set 3 pzs"):');
+    if(!ta) return;
+  }
+  const c = parseFloat(admin_c.value||0);
+  const g = parseFloat(admin_g.value||0);
+  const m = parseFloat(admin_m.value||0);
+  const d = parseFloat(admin_d.value||0);
+  if(!CAT[it]) CAT[it] = {};
+  CAT[it][ta] = {c:c||0, g:g||undefined, m:m||0, d:d||0};
+  // refrescar selects y precios
+  admin_loadTallas();
+  admin_talla.value = ta;
+  admin_fillPrices();
+  // refrescar selects del cotizador
+  buildItems("ALL");
+  alert('💾 Descripción guardada/actualizada.');
+});
+
+document.getElementById('admin_delTall').addEventListener('click', ()=>{
+  const it = admin_item.value;
+  const ta = admin_talla.value;
+  if(!it || !ta){ alert('Selecciona ítem y descripción.'); return; }
+  if(!confirm(`¿Eliminar la descripción "${ta}" de "${it}"?`)) return;
+  delete CAT[it][ta];
+  if(Object.keys(CAT[it]).length===0){
+    if(confirm('Este ítem quedó vacío, ¿eliminar también el ítem completo?')){
+      delete CAT[it];
+    }
+  }
+  admin_buildItemSelect();
+  admin_loadTallas();
+  admin_fillPrices();
+  buildItems("ALL");
+  alert('🗑️ Eliminado.');
+});
+
+document.getElementById('btnGuardarCAT').addEventListener('click', saveCATToStorage);
+document.getElementById('btnRestaurarCAT').addEventListener('click', restoreCATOriginal);
+
+// ===== Importador desde tabla =====
+const admin_import = document.getElementById('admin_import');
+const admin_prefix = document.getElementById('admin_prefix');
+document.getElementById('admin_runImport').addEventListener('click', ()=>{
+  const pref = (admin_prefix.value||'').trim();
+  if(!pref){ alert('Escribe un prefijo de ítem (familia), ej: "Bambalinas".'); return; }
+  const txt = (admin_import.value||'').trim();
+  if(!txt){ alert('Pega la tabla (sin encabezados).'); return; }
+  const lines = txt.split(/\n+/);
+  let creados = 0;
+  const toNum = (s)=>{
+    if(!s) return 0;
+    s = String(s).replace(/\$/g,'').replace(/\$/g,'').replace(/\$/g,'').trim();
+    s = s.replace(/\$/g,'').replace(/\s|\$/g,''); // extra
+    s = s.replace(/\$/g,''); // ensure
+    s = s.replace(/\$/g,''); // noop
+    s = s.replace(/\$/g,''); // noop
+    s = s.replace(/\$/g,''); // noop
+    s = s.replace(/\$/g,''); // noop
+    s = s.replace(/\$/g,''); // noop
+    s = s.replace(/\$/g,''); // noop
+    // quitar signos y cambiar coma decimal por punto
+    s = s.replace(/\$/g,'').replace(/\$/g,'').replace(/\$/g,''); 
+    s = s.replace(/\$/g,''); 
+    s = s.replace(/\$/g,''); 
+    s = s.replace(/[\$]/g,'').replace(/\s/g,'').replace(/,/g,'.');
+    const n = parseFloat(s);
+    return isNaN(n)?0:n;
+  };
+  lines.forEach(raw=>{
+    const cols = raw.split(/\t+|\s{2,}|\s\|\s/).map(c=>c.trim()).filter(Boolean);
+    if(cols.length < 5) return; // necesita Color, Tamaño, G, M, D
+    const color = cols[0];
+    const tamanio = cols[1];
+    const g = toNum(cols[2]);
+    const m = toNum(cols[3]);
+    const d = toNum(cols[4]);
+    const itemName = pref + ' - ' + color;
+    if(!CAT[itemName]) CAT[itemName] = {};
+    CAT[itemName][tamanio] = {c:0, g:g||undefined, m:m||0, d:d||0};
+    creados++;
+  });
+  if(creados>0){
+    buildItems("ALL");
+    admin_buildItemSelect();
+    admin_loadTallas();
+    admin_fillPrices();
+    alert('✅ Importación completada: ' + creados + ' filas.');
+  }else{
+    alert('No se detectaron filas válidas. Revisa el formato.');
+  }
+});
+
+
+// Cargar catálogo desde storage ANTES de construir selects
+loadCATFromStorage();
+buildItems("ALL"); // refrescar selects del cotizador por si cambió el CAT
+admin_buildItemSelect();
+admin_loadTallas();
+admin_fillPrices();
+</script>
+<script>
+// ======= Modo Admin con PIN =======
+const ADMIN_PIN = '2468';
+const ADMIN_KEY = 'CAT_ADMIN_UNLOCKED';
+
+const btnAdmin = document.getElementById('btnAdmin');
+const modCatalogo = document.getElementById('modCatalogo');
+
+function setAdminUI(unlocked){
+  if(unlocked){
+    modCatalogo.style.display = '';
+    const w = document.getElementById('adminToggleCostoWrap'); if(w) w.style.display = '';
+    btnAdmin.textContent = '🔓 Admin';
+    localStorage.setItem(ADMIN_KEY, '1');
+  }else{
+    modCatalogo.style.display = 'none';
+    const w = document.getElementById('adminToggleCostoWrap'); if(w) w.style.display = 'none';
+    btnAdmin.textContent = '🔒 Admin';
+    localStorage.removeItem(ADMIN_KEY);
+  }
+}
+
+// Estado inicial desde storage
+setAdminUI(localStorage.getItem(ADMIN_KEY) === '1');
+
+btnAdmin.addEventListener('click', ()=>{
+  const unlocked = localStorage.getItem(ADMIN_KEY) === '1';
+  if(unlocked){
+    // Bloquear
+    if(confirm('¿Cerrar modo Admin?')) setAdminUI(false);
+    return;
+  }
+  // Desbloquear
+  const intento = prompt('Introduce el PIN de administrador:');
+  if(intento === null) return;
+  if(intento === ADMIN_PIN){
+    setAdminUI(true);
+    alert('✅ Modo Admin habilitado.');
+  }else{
+    alert('❌ PIN incorrecto.');
+  }
+});
+</script>
+<script>
+
+// ======== Auto-actualización Dólar BCV (conexión desde "Precio BCV (Bs por $)" del módulo de divisas) ========
+async function fetchBCVRate(){
+  try{
+    // Fuente: ve.dolarapi.com (endpoint oficial) usando corsproxy para evitar CORS en navegadores
+    const resp = await fetch('https://corsproxy.io/?https://ve.dolarapi.com/v1/dolares/oficial', { cache: 'no-store' });
+    const data = await resp.json();
+    const rate = parseFloat(data?.promedio);
+    if(isFinite(rate) && rate > 0){
+      const val = rate.toFixed(2);
+      const bcvEl = document.getElementById('bcv');
+      if(bcvEl){
+        bcvEl.value = val;
+        // persistimos en el mismo storage del proyecto
+        try{ localStorage.setItem('BCV_RATE', val); }catch(e){}
+        // recalcular totales y texto de WhatsApp
+        try{ recalcTotal(); }catch(e){}
+      }
+    }
+  }catch(err){
+    console.error('No se pudo actualizar el BCV automáticamente', err);
+  }
+}
+
+// Botón manual de refresco
+document.getElementById('bcv_refresh')?.addEventListener('click', ()=>{
+  fetchBCVRate();
+});
+
+// Carga inicial (al abrir) + actualización cada 15 minutos
+try{ fetchBCVRate(); }catch(e){}
+try{ setInterval(fetchBCVRate, 15 * 60 * 1000); }catch(e){}
+
+</script>
+<script>
+
+// === Toast feedback for copy ===
+const toastEl = document.getElementById('toast');
+function showToast(msg='Mensaje copiado'){
+  if(!toastEl) return;
+  toastEl.textContent = msg;
+  toastEl.classList.add('show');
+  setTimeout(()=> toastEl.classList.remove('show'), 1500);
+}
+
+const copiarBtn = document.getElementById('copiar');
+if(copiarBtn){
+  copiarBtn.addEventListener('click', async ()=>{
+    try{
+      await navigator.clipboard.writeText(document.getElementById('texto').textContent);
+      const old = copiarBtn.textContent;
+      copiarBtn.textContent = '¡Copiado!';
+      showToast('✅ Mensaje copiado');
+      setTimeout(()=> copiarBtn.textContent = old, 1200);
+    }catch(e){
+      showToast('No se pudo copiar');
+    }
+  });
+}
+
+// === BCV Refresh with status ===
+const bcvBtn = document.getElementById('bcv_refresh');
+const bcvStatus = document.getElementById('bcv_status');
+async function fetchBCV(){
+  if(!bcvBtn || !bcvStatus) return;
+  bcvBtn.disabled = true; bcvBtn.textContent = 'Actualizando…';
+  bcvStatus.textContent = 'Buscando tasa…';
+  try{
+    const resp = await fetch('https://corsproxy.io/?https://ve.dolarapi.com/v1/dolares/oficial', {cache:'no-store'});
+    const data = await resp.json();
+    let rate = parseFloat(data?.promedio);
+    if(!isFinite(rate)) rate = parseFloat(data?.valor);
+    if(isFinite(rate) && rate>0){
+      const v = rate.toLocaleString('es-ES',{minimumFractionDigits:2,maximumFractionDigits:2});
+      const el = document.getElementById('bcv');
+      if(el){ el.value = v; try{ localStorage.setItem('BCV_RATE', v); }catch(e){} }
+      try{ recalcTotal(); }catch(e){}
+      const d = new Date();
+      bcvStatus.textContent = 'Actualizado: ' + d.toLocaleTimeString();
+    }else{
+      bcvStatus.textContent = 'No disponible';
+    }
+  }catch(e){
+    bcvStatus.textContent = 'Error de red';
+  }finally{
+    bcvBtn.disabled = false; bcvBtn.textContent = 'Actualizar BCV';
+  }
+}
+bcvBtn?.addEventListener('click', fetchBCV);
+// Al cargar, si hay guardado, muéstralo y marca estado
+try{
+  const prev = localStorage.getItem('BCV_RATE');
+  if(prev){ const el = document.getElementById('bcv'); if(el){ el.value = prev; recalcTotal(); } bcvStatus.textContent = 'BCV cargado'; }
+}catch(e){}
+// También intentamos actualizar una vez en segundo plano
+try{ fetchBCV(); }catch(e){}
+
+</script>
+<script>
+// === BCV updater unificado: botón + auto cada 6h con caché/TTL ===
+(function(){
+  const BCV_KEY = 'BCV_RATE';
+  const BCV_TS_KEY = 'BCV_TS';
+  const SIX_HOURS = 6 * 60 * 60 * 1000;
+
+  function humanDelta(ms){
+    const h = Math.floor(ms/3600000);
+    const m = Math.floor((ms%3600000)/60000);
+    if(h>0) return h + 'h ' + m + 'm';
+    return m + 'm';
+  }
+
+  async function fetchBCV(force=false){
+    const bcvInputEl = document.getElementById('bcv');
+    const bcvBtn = document.getElementById('bcv_refresh');
+    const bcvStatus = document.getElementById('bcv_status');
+    if(!bcvInputEl) return;
+
+    if(!force){
+      try{
+        const ts = parseInt(localStorage.getItem(BCV_TS_KEY)||'0',10);
+        const rate = localStorage.getItem(BCV_KEY);
+        if(rate && ts && (Date.now()-ts) < SIX_HOURS){
+          bcvInputEl.value = rate;
+          try{ localStorage.setItem(BCV_KEY, rate); }catch(e){}
+          try{ if(typeof recalcTotal==='function') recalcTotal(); }catch(e){}
+          if(bcvStatus) bcvStatus.textContent = 'Actualizado hace ' + humanDelta(Date.now()-ts);
+          return;
+        }
+      }catch(e){}
+    }
+
+    if(bcvBtn){ bcvBtn.disabled = true; bcvBtn.textContent = 'Actualizando…'; }
+    if(bcvStatus) bcvStatus.textContent = 'Buscando tasa…';
+
+    try{
+      const resp = await fetch('https://corsproxy.io/?https://ve.dolarapi.com/v1/dolares/oficial', {cache:'no-store'});
+      const data = await resp.json();
+      let rate = parseFloat(data?.promedio);
+      if(!isFinite(rate)) rate = parseFloat(data?.valor);
+      if(isFinite(rate) && rate>0){
+        const v = rate.toLocaleString('es-ES',{minimumFractionDigits:2,maximumFractionDigits:2});
+        bcvInputEl.value = v;
+        try{
+          localStorage.setItem(BCV_KEY, v);
+          localStorage.setItem(BCV_TS_KEY, String(Date.now()));
+        }catch(e){}
+        try{ if(typeof recalcTotal==='function') recalcTotal(); }catch(e){}
+        if(bcvStatus) bcvStatus.textContent = 'Actualizado ahora';
+      }else{
+        if(bcvStatus) bcvStatus.textContent = 'No disponible';
+      }
+    }catch(e){
+      if(bcvStatus) bcvStatus.textContent = 'Error de red';
+    }finally{
+      if(bcvBtn){ bcvBtn.disabled = false; bcvBtn.textContent = 'Actualizar BCV'; }
+    }
+  }
+
+  document.addEventListener('DOMContentLoaded', ()=>{
+    const btn = document.getElementById('bcv_refresh');
+    if(btn){
+      btn.addEventListener('click', ()=>fetchBCV(true));
+    }
+
+    // Cargar valor guardado si existe (antes del primer fetch) y mostrar estado
+    try{
+      const prev = localStorage.getItem(BCV_KEY);
+      const ts = parseInt(localStorage.getItem(BCV_TS_KEY)||'0',10);
+      const input = document.getElementById('bcv');
+      const st = document.getElementById('bcv_status');
+      if(prev && input){
+        input.value = prev;
+        try{ if(typeof recalcTotal==='function') recalcTotal(); }catch(e){}
+        if(st){
+          if(ts) st.textContent = 'Actualizado hace ' + humanDelta(Date.now()-ts);
+          else st.textContent = 'BCV cargado';
+        }
+      }
+    }catch(e){}
+
+    // Primer fetch: usa caché si <6h; si no, refresca
+    fetchBCV(false);
+
+    // Programar actualización automática cada 6 horas
+    try{ setInterval(()=>fetchBCV(true), SIX_HOURS); }catch(e){}
+  });
+})();
+</script>
+
+<script>
+(function(){
+  const SW_VERSION = '2';
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('./sw.js?v=' + SW_VERSION).catch(()=>{});
+    });
+  }
+})();
+</script>
+</body>
+</html>
