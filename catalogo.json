@@ -1,0 +1,280 @@
+{
+  "Manga Corta Microdurazno Blanca": {
+    "Niños tallas 2-8": {
+      "c": 11.7,
+      "d": 16.38,
+      "m": 15.21
+    },
+    "Adultos tallas 10-L": {
+      "c": 12.2,
+      "d": 17.08,
+      "m": 15.86
+    },
+    "Adultos tallas XL": {
+      "c": 14.2,
+      "d": 19.88,
+      "m": 18.46
+    },
+    "Adultos tallas XXL": {
+      "c": 16.2,
+      "d": 22.68,
+      "m": 21.06
+    },
+    "Adultos tallas XXXL": {
+      "c": 18.2,
+      "d": 25.48,
+      "m": 23.66
+    }
+  },
+  "Manga Larga Microdurazno Blanca": {
+    "Niños tallas 2-8": {
+      "c": 13.2,
+      "d": 18.48,
+      "m": 17.16
+    },
+    "Adultos tallas 10-L": {
+      "c": 13.7,
+      "d": 19.18,
+      "m": 17.81
+    },
+    "Adultos tallas XL": {
+      "c": 15.7,
+      "d": 21.98,
+      "m": 20.41
+    },
+    "Adultos tallas XXL": {
+      "c": 17.7,
+      "d": 24.78,
+      "m": 23.01
+    },
+    "Adultos tallas XXXL": {
+      "c": 19.7,
+      "d": 27.58,
+      "m": 25.61
+    }
+  },
+  "Manga Larga Microdurazno Negro/Azul/Rojo": {
+    "Niños tallas 2-8": {
+      "c": 15,
+      "d": 21,
+      "m": 19.5
+    },
+    "Adultos tallas 10-L": {
+      "c": 15.5,
+      "d": 21.7,
+      "m": 20.15
+    },
+    "Adultos tallas XL": {
+      "c": 16.5,
+      "d": 23.1,
+      "m": 21.45
+    },
+    "Adultos tallas XXL": {
+      "c": 18.5,
+      "d": 25.9,
+      "m": 24.05
+    },
+    "Adultos tallas XXXL": {
+      "c": 20.5,
+      "d": 28.7,
+      "m": 26.65
+    }
+  },
+  "Manga Corta Algodón Colores": {
+    "Niños tallas 2-8": {
+      "c": 15.5,
+      "d": 21.7,
+      "m": 20.15
+    },
+    "Adultos 10-L": {
+      "c": 16,
+      "d": 22.4,
+      "m": 20.8
+    },
+    "Adultos Talla XL": {
+      "c": 18.5,
+      "d": 25.9,
+      "m": 24.05
+    },
+    "Adultos Talla XXL": {
+      "c": 20.5,
+      "d": 28.7,
+      "m": 26.65
+    },
+    "Adultos Talla XXXL": {
+      "c": 22.5,
+      "d": 31.5,
+      "m": 29.25
+    }
+  },
+  "Manga Larga Algodón Colores": {
+    "Niños 2-8": {
+      "c": 16.5,
+      "d": 23.1,
+      "m": 21.45
+    },
+    "Adultos 10-L": {
+      "c": 17.5,
+      "d": 24.5,
+      "m": 22.75
+    },
+    "Adultos Talla XL": {
+      "c": 19.5,
+      "d": 27.3,
+      "m": 25.35
+    },
+    "Adultos Talla XXL": {
+      "c": 21.5,
+      "d": 30.1,
+      "m": 27.95
+    },
+    "Adultos Talla XXXL": {
+      "c": 23.5,
+      "d": 32.9,
+      "m": 30.55
+    }
+  },
+  "Combinados": {
+    "Niño tallas 2-8": {
+      "c": 13.5,
+      "d": 18.9,
+      "m": 17.55
+    },
+    "Adulto 10-L": {
+      "c": 15.5,
+      "d": 21.7,
+      "m": 20.15
+    },
+    "Adulto XL": {
+      "c": 17.5,
+      "d": 24.5,
+      "m": 22.75
+    },
+    "Adulto XXL": {
+      "c": 19.5,
+      "d": 27.3,
+      "m": 25.35
+    },
+    "Adulto XXXL": {
+      "c": 21.5,
+      "d": 30.1,
+      "m": 27.95
+    }
+  },
+  "Enterizo Blanco": {
+    "3-24 meses": {
+      "c": 5.7,
+      "d": 7.98,
+      "m": 7.41
+    }
+  },
+  "Enterizo Negro": {
+    "3-24 meses": {
+      "c": 7.5,
+      "d": 10.5,
+      "m": 9.75
+    }
+  },
+  "Enterizo Algodón": {
+    "3-24 meses": {
+      "c": 8.5,
+      "d": 11.9,
+      "m": 11.05
+    }
+  },
+  "Body Microdurazno": {
+    "3-24 meses": {
+      "c": 4.2,
+      "d": 5.88,
+      "m": 5.46
+    }
+  },
+  "Body Microdurazno Negro": {
+    "3-24 meses": {
+      "c": 6,
+      "d": 8.4,
+      "m": 7.8
+    }
+  },
+  "Body Algodón": {
+    "3-24 meses": {
+      "c": 6.5,
+      "d": 9.1,
+      "m": 8.45
+    }
+  },
+  "Ropa para Mascotas": {
+    "Pequeñas": {
+      "c": 5.7,
+      "d": 7.98,
+      "m": 7.41
+    },
+    "Grandes": {
+      "c": 6.7,
+      "d": 9.38,
+      "m": 8.71
+    }
+  },
+  "Pijama elfo": {
+    "Niño tallas 2-10": {
+      "c": 19,
+      "d": 26.6,
+      "m": 24.7
+    },
+    "Adulto talla 12-L": {
+      "c": 20.43,
+      "d": 28.6,
+      "m": 26.56
+    }
+  },
+  "Bambalinas - Colores": {
+    "6 cm": {
+      "c": 0,
+      "g": 1.6,
+      "m": 1.9,
+      "d": 2.3
+    },
+    "7 cm": {
+      "c": 0,
+      "g": 1.9,
+      "m": 2.2,
+      "d": 2.6
+    },
+    "8 cm": {
+      "c": 0,
+      "g": 2.35,
+      "m": 2.7,
+      "d": 3.1
+    }
+  },
+  "Bambalinas - Blancas": {
+    "8 cm": {
+      "c": 0,
+      "g": 2.9,
+      "m": 3.3,
+      "d": 3.8
+    }
+  },
+  "Bambalinas - Transparente": {
+    "8 cm": {
+      "c": 0,
+      "g": 3,
+      "m": 3.5,
+      "d": 4
+    }
+  },
+  "Bambalinas - Rellenas (Foto)": {
+    "8 cm": {
+      "c": 0,
+      "g": 4.9,
+      "m": 5.6,
+      "d": 6.5
+    },
+    "10 cm": {
+      "c": 0,
+      "g": 5.7,
+      "m": 6.5,
+      "d": 7.5
+    }
+  }
+}

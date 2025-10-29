@@ -560,7 +560,7 @@ buildText();
 </div>
 <div class="sep"></div>
 <div class="toolbar">
-<button id="btnGuardarCAT">Guardar Catálogo (este dispositivo)</button>
+<button id="btnGuardarCAT">Guardar Catálogo (este dispositivo)</button><button id="btnExportCAT">📤 Exportar catálogo (JSON)</button>
 <button class="ghost" id="btnRestaurarCAT">Restaurar Catálogo Original</button>
 <span class="hint">Los cambios se guardan en el almacenamiento local del navegador.</span>
 </div>
@@ -1008,7 +1008,6 @@ try{ fetchBCV(); }catch(e){}
   });
 })();
 </script>
-
 <script>
 (function(){
   const SW_VERSION = '2';
@@ -1019,5 +1018,31 @@ try{ fetchBCV(); }catch(e){}
   }
 })();
 </script>
-</body>
+<script>
+// === Exportar catálogo JSON ===
+function exportCAT(){
+  const blob = new Blob([JSON.stringify(CAT, null, 2)], {type:'application/json'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'catalogo.json';
+  a.click();
+}
+document.getElementById('btnExportCAT')?.addEventListener('click', exportCAT);
+
+// === Cargar catálogo remoto ===
+async function loadRemoteCAT(){
+  try{
+    const resp = await fetch('https://danipad100.github.io/CotizadorV2/catalogo.json', {cache:'no-store'});
+    if(!resp.ok) throw 0;
+    const data = await resp.json();
+    Object.keys(CAT).forEach(k=>delete CAT[k]);
+    Object.assign(CAT, data);
+    buildItems("ALL");
+    console.log("CAT remoto cargado");
+  }catch(e){
+    console.log("No se cargó CAT remoto, usando interno");
+  }
+}
+loadRemoteCAT();
+</script></body>
 </html>
