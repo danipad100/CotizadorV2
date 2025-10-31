@@ -138,6 +138,31 @@
 <span class="hint" id="bcv_status">—</span>
 </div>
 </div>
+
+<!-- Envío controls -->
+<div class="field" style="grid-column:span 3">
+  <label style="display:flex; align-items:center; gap:8px">
+    <input type="checkbox" id="envioChk"> Incluir envío
+  </label>
+  <div style="display:flex; gap:8px; align-items:center; margin-top:6px">
+    <span class="hint">$</span>
+    <input id="envioMonto" type="number" step="0.01" min="0" value="2.00" style="flex:1" disabled>
+  </div>
+  <span class="hint">Precio de referencia: 2,00 $ (editable)</span>
+</div>
+
+<!-- Delivery controls -->
+<div class="field" style="grid-column:span 3">
+  <label style="display:flex; align-items:center; gap:8px">
+    <input type="checkbox" id="deliveryChk"> Incluir delivery
+  </label>
+  <div style="display:flex; gap:8px; align-items:center; margin-top:6px">
+    <span class="hint">$</span>
+    <input id="deliveryMonto" type="number" step="0.01" min="0" value="3.00" style="flex:1" disabled>
+  </div>
+  <span class="hint">Precio de referencia: 3,00 $ (editable)</span>
+</div>
+
 <div class="field" style="grid-column:span 6">
 <label>Mensaje WhatsApp (inicio)</label>
 <input id="msgIni" value="Hola 👋, te comparto la cotización de pijamas:"/>
@@ -193,19 +218,24 @@
 </thead>
 <tbody></tbody>
 <tfoot>
-<tr>
+<tr id="rowTotalUsd">
 <td class="right" colspan="5">TOTAL ($)</td>
 <td class="right" id="granTotal">0,00</td>
 <td></td>
 </tr>
-<tr>
+<tr id="rowAbono">
 <td class="right" colspan="5">ABONO (50%) — Bs</td>
 <td class="right" id="abonoBs">0,00 Bs</td>
 <td></td>
 </tr>
-<tr>
+<tr id="rowRestante">
 <td class="right" colspan="5">RESTANTE ($)</td>
 <td class="right" id="restanteUsd">0,00 $</td>
+<td></td>
+</tr>
+<tr id="rowTotalBs" style="display:none">
+<td class="right" colspan="5">TOTAL (Bs)</td>
+<td class="right" id="granTotalBs">0,00 Bs</td>
 <td></td>
 </tr>
 </tfoot>
@@ -346,18 +376,51 @@ function recalcTotal(){
 
   let total=0;
   $$('#tabla tbody tr').forEach(tr=> total += parseFloat(tr.dataset.total||0));
+
+  // Delivery
+  const deliveryActivo = document.getElementById('deliveryChk')?.checked;
+  const deliveryMonto = parseEU(document.getElementById('deliveryMonto')?.value || 0);
+  if(deliveryActivo){ total += deliveryMonto; }
+
+  // Envío
+  const envioActivo = document.getElementById('envioChk')?.checked;
+  const envioMonto = parseEU(document.getElementById('envioMonto')?.value || 0);
+  if(envioActivo){ total += envioMonto; }
+
+  // Mostrar total en USD
   $('#granTotal').textContent = fmt(total) + ' $';
-  // calcular abono 50% en Bs
+
+  // BCV y filas a mostrar
   const bcv = parseEU($('#bcv')?.value || 0);
+  const rowAbono = document.getElementById('rowAbono');
+  const rowRest = document.getElementById('rowRestante');
+  const rowBs = document.getElementById('rowTotalBs');
+
+  if(envioActivo){
+    if(rowAbono) rowAbono.style.display = 'none';
+    if(rowRest) rowRest.style.display = 'none';
+    if(rowBs) rowBs.style.display = '';
+  }else{
+    if(rowAbono) rowAbono.style.display = '';
+    if(rowRest) rowRest.style.display = '';
+    if(rowBs) rowBs.style.display = 'none';
+  }
+
+  // Abono 50% en Bs (solo si no hay envío activo)
   const abono = total * 0.5 * bcv;
   if($('#abonoBs')) $('#abonoBs').textContent = fmt(abono) + ' Bs';
+
+  // Total en Bs (si envío activo)
+  if($('#granTotalBs')) $('#granTotalBs').textContent = fmt(total * bcv) + ' Bs';
+
   buildText();
 
-  // calcular restante (USD)
-  const totalNum = parseEU(document.getElementById('granTotal').textContent.replace(/[^\d.,]/g,''));
-  const restante = totalNum * 0.5; // 50% restante
+  // Restante 50% en USD (cuando no hay envío activo)
+  const totalNum = total;
+  const restante = totalNum * 0.5;
   const restEl = document.getElementById('restanteUsd'); if(restEl) restEl.textContent = fmt(restante) + ' $';
   try{ updateBadgeNombre(); }catch(e){}
+
 }
 
 
@@ -395,6 +458,7 @@ $('#agregar').addEventListener('click', addLinea);
 $('#reset').addEventListener('click', ()=>{ $('#tabla tbody').innerHTML=''; recalcTotal(); });
 
 function buildText(){
+
   badgeCliente.textContent = tipoCliente.value;
 
   const lines = $$('#tabla tbody tr').map(tr=>{
@@ -404,23 +468,47 @@ function buildText(){
 
   const nombre = (document.getElementById('clienteNombre')?.value || '').trim();
 
+  // Total desde el DOM (ya incluye envío si aplica)
   const totalTxt = $('#granTotal').textContent;
   const totalNum = parseEU(totalTxt.replace(/[^\d.,]/g, ''));
-  const abonoUSD = totalNum * 0.5;
-  const restanteUSD = totalNum - abonoUSD;
+  const envioActivo = document.getElementById('envioChk')?.checked;
+  const envioMonto = parseEU(document.getElementById('envioMonto')?.value || 0);
+  const deliveryActivo = document.getElementById('deliveryChk')?.checked;
+  const deliveryMonto = parseEU(document.getElementById('deliveryMonto')?.value || 0);
+  const bcvVal = parseEU($('#bcv')?.value || 0);
 
-  const abonoUsdTxt = fmt(abonoUSD) + ' $';
-  const restanteUsdTxt = fmt(restanteUSD) + ' $';
-  const abonoBsTxt = $('#abonoBs')?.textContent || '0,00 Bs';
-
-  const txt = `${$('#msgIni').value}
+  let txt = `${$('#msgIni').value}
 Cliente: ${tipoCliente.value}${nombre ? ' — ' + nombre : ''}
 Productos:
-${lines.join('\n')}
-Total: ${fmt(totalNum)} $
+${lines.join('\n')}`;
+
+  if(envioActivo){
+    txt += `\nEnvío: ${fmt(envioMonto)} $`;
+  }
+
+  if(deliveryActivo){
+    txt += `\nDelivery: ${fmt(deliveryMonto)} $`;
+  }
+
+  txt += `
+Total: ${fmt(totalNum)} $`;
+
+  if(envioActivo){
+    txt += `\nTotal en Bs: ${fmt(totalNum * bcvVal)} Bs`;
+  }else{
+    const abonoUSD = totalNum * 0.5;
+    const restanteUSD = totalNum - abonoUSD;
+    const abonoUsdTxt = fmt(abonoUSD) + ' $';
+    const restanteUsdTxt = fmt(restanteUSD) + ' $';
+    const abonoBsTxt = $('#abonoBs')?.textContent || '0,00 Bs';
+
+    txt += `
 Abono 50%: ${abonoUsdTxt}
 Abono en Bs: ${abonoBsTxt}
-Restante: ${restanteUsdTxt}
+Restante: ${restanteUsdTxt}`;
+  }
+
+  txt += `
 ${$('#msgFin').value}`;
 
   $('#texto').textContent = txt;
@@ -428,6 +516,7 @@ ${$('#msgFin').value}`;
   const tel = $('#telefono').value.trim();
   const base = tel ? `https://wa.me/${tel}?text=` : `https://wa.me/?text=`;
   $('#whatsLink').href = base + encodeURIComponent(txt);
+
 }
 
 tipoCliente.addEventListener('change', ()=>{
@@ -1044,5 +1133,58 @@ async function loadRemoteCAT(){
   }
 }
 loadRemoteCAT();
-</script></body>
+</script><script>
+
+// === Envío: listeners & persistencia ===
+(function(){
+  const chk = document.getElementById('envioChk');
+  const monto = document.getElementById('envioMonto');
+  if(chk && monto){
+    try{
+      const savedOn = localStorage.getItem('ENVIO_ON') === '1';
+      const savedMonto = localStorage.getItem('ENVIO_MONTO');
+      if(savedOn){ chk.checked = true; monto.disabled = false; }
+      if(savedMonto){ monto.value = savedMonto; }
+    }catch(e){}
+
+    const sync = ()=>{
+      monto.disabled = !chk.checked;
+      try{
+        localStorage.setItem('ENVIO_ON', chk.checked ? '1' : '0');
+        localStorage.setItem('ENVIO_MONTO', monto.value);
+      }catch(e){}
+      recalcTotal();
+    };
+    chk.addEventListener('change', sync);
+    monto.addEventListener('input', sync);
+  }
+})();
+</script>
+<script>
+
+// === Delivery: listeners & persistencia ===
+(function(){
+  const chk = document.getElementById('deliveryChk');
+  const monto = document.getElementById('deliveryMonto');
+  if(chk && monto){
+    try{
+      const on = localStorage.getItem('DELIVERY_ON') === '1';
+      const val = localStorage.getItem('DELIVERY_MONTO');
+      if(on){ chk.checked = true; monto.disabled = false; }
+      if(val){ monto.value = val; }
+    }catch(e){}
+    const sync = ()=>{
+      monto.disabled = !chk.checked;
+      try{
+        localStorage.setItem('DELIVERY_ON', chk.checked ? '1' : '0');
+        localStorage.setItem('DELIVERY_MONTO', monto.value);
+      }catch(e){}
+      recalcTotal();
+    };
+    chk.addEventListener('change', sync);
+    monto.addEventListener('input', sync);
+  }
+})();
+</script>
+</body>
 </html>

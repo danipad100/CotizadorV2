@@ -276,5 +276,32 @@
       "m": 6.5,
       "d": 7.5
     }
+  },
+  "Manga Corta Microdurazno - Negro, Colores": {
+    "Niños tallas 2-8": {
+      "c": 0,
+      "m": 14.95,
+      "d": 16.1
+    },
+    "Adultos tallas 10-L": {
+      "c": 0,
+      "m": 18.2,
+      "d": 19.6
+    },
+    "Adultos tallas XL": {
+      "c": 0,
+      "m": 20.8,
+      "d": 22.4
+    },
+    "Adultos tallas XXL": {
+      "c": 0,
+      "m": 23.4,
+      "d": 25.2
+    },
+    "Adultos tallas XXXL": {
+      "c": 0,
+      "m": 26,
+      "d": 28
+    }
   }
 }
