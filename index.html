@@ -463,7 +463,13 @@ function buildText(){
 
   const lines = $$('#tabla tbody tr').map(tr=>{
     const t = tr.children;
-    return `${t[0].textContent}x ${t[1].textContent} ${t[2].textContent} → ${t[5].textContent}`;
+    const cant = t[0].textContent;
+    const item = t[1].textContent;
+    const desc = t[2].textContent;
+    const pUnit = t[4].textContent;
+    const total = t[5].textContent;
+    return `${cant}x ${item} ${desc}
+P.Unit: ${pUnit} → Total: ${total}`;
   });
 
   const nombre = (document.getElementById('clienteNombre')?.value || '').trim();
@@ -1099,7 +1105,7 @@ try{ fetchBCV(); }catch(e){}
 </script>
 <script>
 (function(){
-  const SW_VERSION = '2';
+  const SW_VERSION = '3';
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
       navigator.serviceWorker.register('./sw.js?v=' + SW_VERSION).catch(()=>{});
